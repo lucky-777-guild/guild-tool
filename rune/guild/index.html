@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ギルド占領戦 参加登録</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; font-size: 15px; }
+.app { max-width: 720px; margin: 0 auto; padding: 12px; }
+h1 { font-size: 20px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #27ae60; display: inline-block; }
+.sync-dot.error { background: #e74c3c; }
+
+/* panels */
+.panel { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+.panel.admin-panel { border-color: #f39c12; background: #fffdf5; }
+.panel-label { font-size: 12px; color: #888; margin-bottom: 6px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row input { flex: 1; min-width: 0; padding: 7px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+.row input:focus { outline: none; border-color: #4a90d9; }
+input[type="password"] { letter-spacing: 2px; }
+
+/* buttons */
+button { padding: 7px 14px; border: 1px solid #ddd; border-radius: 8px; background: #fff; font-size: 13px; cursor: pointer; color: #333; white-space: nowrap; }
+button:hover { background: #f0f0f0; }
+button.primary { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+button.primary:hover { background: #3a7fc8; }
+button.danger { color: #c0392b; border-color: #f5b7b1; }
+button.danger:hover { background: #fdf2f2; }
+button.warn { background: #e67e22; color: #fff; border-color: #e67e22; }
+button.warn:hover { background: #d35400; }
+button.admin-btn { background: #f39c12; color: #fff; border-color: #f39c12; }
+button.admin-btn:hover { background: #e08e0b; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.name-badge { background: #e8f4fd; color: #1a6fa8; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+.proxy-badge { background: #fef9e7; color: #9a6800; padding: 4px 12px; border-radius: 20px; font-size: 12px; border: 1px solid #f9e79f; }
+.admin-badge { background: #fef3e2; color: #b7770d; padding: 4px 12px; border-radius: 20px; font-size: 12px; border: 1px solid #f9c74f; font-weight: 600; }
+.inline-form { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; }
+
+/* stats */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.stat { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px; text-align: center; }
+.stat-val { font-size: 24px; font-weight: 700; }
+.stat-val.green { color: #27ae60; }
+.stat-lbl { font-size: 11px; color: #888; margin-top: 2px; }
+
+/* tabs */
+.tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.tab { flex: 1; padding: 8px; font-size: 13px; border-radius: 8px; border: 1px solid #ddd; background: #fff; cursor: pointer; color: #666; }
+.tab.active { background: #4a90d9; color: #fff; border-color: #4a90d9; font-weight: 600; }
+
+/* area grid */
+.areas { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 10px; }
+.card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 12px; }
+.card.winning { border-color: #27ae60; border-width: 2px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.area-name { font-size: 15px; font-weight: 600; }
+.size-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+.sz-s { background: #f0f0f0; color: #666; }
+.sz-m { background: #e8f4fd; color: #1a6fa8; }
+.sz-l { background: #fef9e7; color: #9a6800; }
+.boss { font-size: 12px; margin-bottom: 4px; font-weight: 500; }
+.boss-grondr { color: #7f77dd; }
+.boss-brinka { color: #27ae60; }
+.boss-nahtu  { color: #e67e22; }
+.boss-mirage { color: #c0a000; }
+.boss-other  { color: #888; }
+.restrict { font-size: 11px; display: inline-block; margin-bottom: 6px; padding: 2px 8px; border-radius: 20px; background: #fdf2f2; color: #c0392b; }
+.no-restrict { font-size: 11px; color: #aaa; margin-bottom: 6px; display: inline-block; }
+.prog-bar { height: 4px; background: #eee; border-radius: 2px; margin-bottom: 4px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 2px; background: #27ae60; transition: width 0.3s; }
+.prog-fill.warn { background: #f39c12; }
+.prog-fill.full { background: #e74c3c; }
+.count { font-size: 12px; color: #888; margin-bottom: 6px; }
+.slots { display: flex; flex-wrap: wrap; gap: 4px; min-height: 24px; margin-bottom: 8px; }
+.slot { font-size: 11px; padding: 2px 9px; border-radius: 20px; background: #e8f4fd; color: #1a6fa8; }
+.slot.mine { background: #27ae60; color: #fff; }
+.btn-row { display: flex; gap: 6px; margin-bottom: 6px; }
+.join-btn { flex: 1; font-size: 13px; background: #4a90d9; color: #fff; border-color: #4a90d9; }
+.join-btn:hover:not(:disabled) { background: #3a7fc8; }
+.leave-btn { font-size: 13px; padding: 7px 10px; color: #c0392b; border-color: #f5b7b1; }
+.leave-btn:hover:not(:disabled) { background: #fdf2f2; }
+.win-toggle { width: 100%; font-size: 12px; padding: 6px; border-radius: 8px; border: 1px solid #ddd; background: #fafafa; color: #888; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.win-toggle:hover { background: #f0f0f0; }
+.win-toggle.on { background: #eafaf1; color: #27ae60; border-color: #a9dfbf; font-weight: 600; }
+.win-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.pts-row { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #aaa; }
+.pts-on { color: #27ae60; font-weight: 600; }
+
+/* admin edit overlay on card */
+.admin-edit { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #f39c12; display: none; }
+.admin-edit.show { display: block; }
+.admin-edit select, .admin-edit input { width: 100%; padding: 5px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; margin-bottom: 6px; }
+.admin-edit label { font-size: 11px; color: #888; display: block; margin-bottom: 2px; }
+.admin-edit-btns { display: flex; gap: 6px; }
+.admin-edit-btns button { flex: 1; font-size: 12px; padding: 5px; }
+
+/* admin panel */
+.admin-section { margin-bottom: 8px; }
+.admin-section h3 { font-size: 13px; font-weight: 600; color: #b7770d; margin-bottom: 8px; }
+.reset-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* summary */
+table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #e0e0e0; }
+th { text-align: left; padding: 8px 12px; background: #f8f8f8; color: #666; font-weight: 600; border-bottom: 1px solid #eee; }
+td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; }
+tr:last-child td { border-bottom: none; }
+.empty { text-align: center; padding: 24px; color: #aaa; font-size: 13px; }
+.divider { border: none; border-top: 1px solid #eee; margin: 10px 0; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>ギルド占領戦 参加登録 <span id="syncDot" class="sync-dot"></span></h1>
+
+  <!-- user panel -->
+  <div class="panel">
+    <div id="setupView">
+      <div class="panel-label">名前を設定してください</div>
+      <div class="row">
+        <input type="text" id="nameSetInput" placeholder="あなたの名前..." />
+        <button class="primary" onclick="setName()">セット</button>
+      </div>
+    </div>
+    <div id="activeView" style="display:none">
+      <div class="row">
+        <span class="panel-label" style="margin:0">操作中：</span>
+        <span class="name-badge" id="activeBadge"></span>
+        <span class="proxy-badge" id="proxyBadge" style="display:none">代理入力中</span>
+        <span class="admin-badge" id="adminBadge" style="display:none">管理者</span>
+        <button onclick="showRenameForm()">名前を変更</button>
+        <button onclick="showProxyForm()">別の人として入力</button>
+        <button class="danger" id="stopProxyBtn" style="display:none" onclick="stopProxy()">代理入力を終了</button>
+      </div>
+      <div id="renameForm" class="inline-form" style="display:none">
+        <div class="panel-label">新しい名前（登録済みデータも自動更新）</div>
+        <div class="row">
+          <input type="text" id="renameInput" placeholder="新しい名前..." />
+          <button class="primary" onclick="applyRename()">変更</button>
+          <button onclick="hideRenameForm()">キャンセル</button>
+        </div>
+      </div>
+      <div id="proxyForm" class="inline-form" style="display:none">
+        <div class="panel-label">代理入力する相手の名前</div>
+        <div class="row">
+          <input type="text" id="proxyInput" placeholder="メンバーの名前..." />
+          <button class="primary" onclick="applyProxy()">この人として入力</button>
+          <button onclick="hideProxyForm()">キャンセル</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- admin panel (visible when admin) -->
+  <div class="panel admin-panel" id="adminPanel" style="display:none">
+    <div class="row" style="margin-bottom:10px">
+      <strong style="font-size:14px;color:#b7770d">管理者モード</strong>
+      <button class="danger" style="margin-left:auto" onclick="adminLogout()">ログアウト</button>
+    </div>
+
+    <div class="admin-section">
+      <h3>データリセット</h3>
+      <div class="reset-actions">
+        <button class="warn" onclick="resetJoins()">参加登録をリセット</button>
+        <button class="warn" onclick="resetWinning()">「取れそう」をリセット</button>
+        <button class="danger" onclick="resetAll()">全データリセット（新シーズン）</button>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="admin-section">
+      <h3>エリア情報編集（各エリアカードの「編集」ボタンから変更できます）</h3>
+      <p style="font-size:12px;color:#888">エリア一覧タブのカードに「編集」ボタンが表示されます。ボス名・ユニット制限を変更して「保存」してください。</p>
+    </div>
+  </div>
+
+  <!-- stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="totalJoined">-</div><div class="stat-lbl">総登録数</div></div>
+    <div class="stat"><div class="stat-val" id="myJoins">0/3</div><div class="stat-lbl">自分の参加</div></div>
+    <div class="stat"><div class="stat-val green" id="estPts">0</div><div class="stat-lbl">確定pt見込み</div></div>
+  </div>
+
+  <!-- tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('areas')" id="tab-areas">エリア一覧</button>
+    <button class="tab" onclick="showTab('summary')" id="tab-summary">参加者まとめ</button>
+  </div>
+
+  <div id="view-areas"><div id="areaGrid" class="areas"><div style="padding:24px;text-align:center;color:#aaa">Firebaseに接続中...</div></div></div>
+  <div id="view-summary" style="display:none"><div id="summaryContent"></div></div>
+
+  <!-- admin login (bottom) -->
+  <div class="panel" id="adminLoginPanel" style="margin-top:24px">
+    <div class="panel-label">管理者ログイン</div>
+    <div class="row">
+      <input type="password" id="adminPwInput" placeholder="管理者パスワード..." />
+      <button class="admin-btn" onclick="adminLogin()">ログイン</button>
+    </div>
+    <div id="adminLoginError" style="font-size:12px;color:#c0392b;margin-top:6px;display:none">パスワードが違います</div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCPfvnpqODiaHeFJC-SEOlLYw_u0u3TvTM",
+  authDomain: "ld-guild-occupation-app.firebaseapp.com",
+  databaseURL: "https://ld-guild-occupation-app-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ld-guild-occupation-app",
+  storageBucket: "ld-guild-occupation-app.firebasestorage.app",
+  messagingSenderId: "784830612155",
+  appId: "1:784830612155:web:a0ece9a611ee159f37df9e"
+};
+
+const ADMIN_PASSWORD = "guild2024"; // ← ここを好きなパスワードに変更してください
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const CAP = { s:8, m:10, l:15 };
+const SIZE_LABEL = { s:'小(8)', m:'中(10)', l:'大(15)' };
+const BOSS_NAMES = ['グロンドール','ブリンカ','ナハトゥ','ミラージュ','その他'];
+const BOSS_CLASS = { グロンドール:'boss-grondr', ブリンカ:'boss-brinka', ナハトゥ:'boss-nahtu', ミラージュ:'boss-mirage' };
+
+const DEFAULT_AREAS = [
+  {id:1,size:'s',restrict:false,pts:150,boss:'グロンドール'},
+  {id:2,size:'m',restrict:true, pts:200,boss:'グロンドール'},
+  {id:3,size:'s',restrict:false,pts:150,boss:'グロンドール'},
+  {id:4,size:'s',restrict:true, pts:150,boss:'ブリンカ'},
+  {id:5,size:'m',restrict:false,pts:200,boss:'ナハトゥ'},
+  {id:6,size:'m',restrict:false,pts:200,boss:'グロンドール'},
+  {id:7,size:'l',restrict:true, pts:350,boss:'グロンドール'},
+  {id:8,size:'s',restrict:true, pts:150,boss:'ナハトゥ'},
+  {id:9,size:'s',restrict:true, pts:150,boss:'ミラージュ'},
+  {id:10,size:'l',restrict:false,pts:350,boss:'ブリンカ'},
+  {id:11,size:'s',restrict:false,pts:150,boss:'グロンドール'},
+  {id:12,size:'s',restrict:false,pts:150,boss:'ナハトゥ'},
+  {id:13,size:'m',restrict:true, pts:200,boss:'ミラージュ'},
+  {id:14,size:'s',restrict:false,pts:150,boss:'ブリンカ'},
+  {id:15,size:'s',restrict:false,pts:150,boss:'ミラージュ'},
+];
+
+let myName = localStorage.getItem('guild_username') || '';
+let activeUser = myName;
+let isProxy = false;
+let isAdmin = false;
+let joins = {};
+let winning = {};
+let areas = JSON.parse(JSON.stringify(DEFAULT_AREAS));
+
+// Firebase sync
+onValue(ref(db, 'joins'), snap => { joins = snap.val() || {}; render(); document.getElementById('syncDot').className='sync-dot'; }, () => { document.getElementById('syncDot').className='sync-dot error'; });
+onValue(ref(db, 'winning'), snap => { winning = snap.val() || {}; render(); });
+onValue(ref(db, 'areas'), snap => {
+  const val = snap.val();
+  if (val) areas = val;
+  else { areas = JSON.parse(JSON.stringify(DEFAULT_AREAS)); set(ref(db,'areas'), areas); }
+  render();
+});
+
+async function saveJoins() { await set(ref(db,'joins'), joins); }
+async function saveWin()   { await set(ref(db,'winning'), winning); }
+async function saveAreas() { await set(ref(db,'areas'), areas); }
+
+// --- admin ---
+window.adminLogin = function() {
+  const pw = document.getElementById('adminPwInput').value;
+  if (pw === ADMIN_PASSWORD) {
+    isAdmin = true;
+    document.getElementById('adminLoginPanel').style.display = 'none';
+    document.getElementById('adminPanel').style.display = '';
+    document.getElementById('adminBadge').style.display = '';
+    document.getElementById('adminLoginError').style.display = 'none';
+    render();
+  } else {
+    document.getElementById('adminLoginError').style.display = '';
+  }
+};
+window.adminLogout = function() {
+  isAdmin = false;
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('adminLoginPanel').style.display = '';
+  document.getElementById('adminBadge').style.display = 'none';
+  render();
+};
+
+window.resetJoins = async function() {
+  if (!confirm('参加登録データをすべてリセットしますか？')) return;
+  joins = {};
+  await set(ref(db,'joins'), {});
+};
+window.resetWinning = async function() {
+  if (!confirm('「取れそう」フラグをすべてリセットしますか？')) return;
+  winning = {};
+  await set(ref(db,'winning'), {});
+};
+window.resetAll = async function() {
+  if (!confirm('全データ（参加登録・取れそう）をリセットします。新シーズン開始時に使用してください。よろしいですか？')) return;
+  joins = {}; winning = {};
+  await set(ref(db,'joins'), {});
+  await set(ref(db,'winning'), {});
+};
+
+// admin area edit
+window.showAreaEdit = function(id) {
+  document.getElementById(`edit-${id}`).classList.toggle('show');
+};
+window.saveAreaEdit = async function(id) {
+  const boss = document.getElementById(`boss-sel-${id}`).value;
+  const restrict = document.getElementById(`restrict-sel-${id}`).value === 'true';
+  const a = areas.find(x => x.id === id);
+  if (a) { a.boss = boss; a.restrict = restrict; }
+  await saveAreas();
+  document.getElementById(`edit-${id}`).classList.remove('show');
+};
+
+// --- user ---
+function updateUserPanelUI() {
+  if (!myName) {
+    document.getElementById('setupView').style.display = '';
+    document.getElementById('activeView').style.display = 'none';
+    return;
+  }
+  document.getElementById('setupView').style.display = 'none';
+  document.getElementById('activeView').style.display = '';
+  document.getElementById('activeBadge').textContent = activeUser;
+  document.getElementById('proxyBadge').style.display = isProxy ? '' : 'none';
+  document.getElementById('stopProxyBtn').style.display = isProxy ? '' : 'none';
+  document.getElementById('adminBadge').style.display = isAdmin ? '' : 'none';
+}
+
+window.setName = function() {
+  const v = document.getElementById('nameSetInput').value.trim();
+  if (!v) return;
+  myName = v; activeUser = v; isProxy = false;
+  localStorage.setItem('guild_username', v);
+  updateUserPanelUI(); render();
+};
+window.showRenameForm = function() {
+  document.getElementById('renameForm').style.display = '';
+  document.getElementById('proxyForm').style.display = 'none';
+  document.getElementById('renameInput').value = myName;
+  document.getElementById('renameInput').focus();
+};
+window.hideRenameForm = function() { document.getElementById('renameForm').style.display = 'none'; };
+window.applyRename = async function() {
+  const v = document.getElementById('renameInput').value.trim();
+  if (!v) return;
+  const old = myName;
+  for (const key in joins) joins[key] = (joins[key]||[]).map(n => n===old ? v : n);
+  myName = v; if (!isProxy) activeUser = v;
+  localStorage.setItem('guild_username', v);
+  await saveJoins(); window.hideRenameForm(); updateUserPanelUI(); render();
+};
+window.showProxyForm = function() {
+  document.getElementById('proxyForm').style.display = '';
+  document.getElementById('renameForm').style.display = 'none';
+  document.getElementById('proxyInput').value = '';
+  document.getElementById('proxyInput').focus();
+};
+window.hideProxyForm = function() { document.getElementById('proxyForm').style.display = 'none'; };
+window.applyProxy = function() {
+  const v = document.getElementById('proxyInput').value.trim();
+  if (!v) return;
+  activeUser = v; isProxy = true;
+  window.hideProxyForm(); updateUserPanelUI(); render();
+};
+window.stopProxy = function() { activeUser = myName; isProxy = false; updateUserPanelUI(); render(); };
+
+function getCountFor(user) { return Object.values(joins).flat().filter(n => n===user).length; }
+function getCountInArea(id, user) { return (joins[String(id)]||[]).filter(n => n===user).length; }
+
+window.joinArea = async function(areaId) {
+  if (!activeUser) { alert('先に名前をセットしてください'); return; }
+  if (getCountFor(activeUser) >= 3) { alert(`${activeUser} はすでに3回参加登録しています`); return; }
+  const area = areas.find(a => a.id===areaId);
+  const key = String(areaId);
+  if (!joins[key]) joins[key] = [];
+  if (joins[key].length >= CAP[area.size]) { alert('このエリアは満員です'); return; }
+  joins[key].push(activeUser);
+  await saveJoins();
+};
+window.leaveArea = async function(areaId) {
+  if (!activeUser) return;
+  const key = String(areaId);
+  const arr = joins[key]||[];
+  const idx = arr.lastIndexOf(activeUser);
+  if (idx < 0) return;
+  arr.splice(idx, 1);
+  joins[key] = arr;
+  await saveJoins();
+};
+window.toggleWin = async function(areaId) {
+  const key = String(areaId);
+  winning[key] = !winning[key];
+  await saveWin();
+};
+
+function render() {
+  updateUserPanelUI(); renderAreas(); renderStats();
+  if (document.getElementById('view-summary').style.display !== 'none') renderSummary();
+}
+
+function renderAreas() {
+  const myTotal = getCountFor(activeUser);
+  document.getElementById('areaGrid').innerHTML = areas.map(a => {
+    const key = String(a.id);
+    const list = joins[key]||[];
+    const cap = CAP[a.size];
+    const myHere = getCountInArea(a.id, activeUser);
+    const isFull = list.length >= cap;
+    const canJoin = !!activeUser && myTotal < 3 && !isFull;
+    const canLeave = !!activeUser && myHere > 0;
+    const pct = Math.min(100, Math.round(list.length/cap*100));
+    const fillCls = pct>=100?'full':pct>=70?'warn':'';
+    const bossClass = BOSS_CLASS[a.boss]||'boss-other';
+    const isWin = !!winning[key];
+    const countMap = {};
+    for (const n of list) countMap[n]=(countMap[n]||0)+1;
+    const slotHtml = Object.entries(countMap).map(([n,c])=>
+      `<span class="slot${n===activeUser?' mine':''}">${n}${c>1?` x${c}`:''}</span>`
+    ).join('')||'<span style="font-size:11px;color:#bbb">まだ誰もいない</span>';
+
+    const bossOptions = BOSS_NAMES.map(b=>`<option value="${b}"${a.boss===b?' selected':''}>${b}</option>`).join('');
+
+    return `<div class="card${isWin?' winning':''}">
+      <div class="card-header">
+        <span class="area-name">${a.id}エリア</span>
+        <span class="size-badge sz-${a.size}">${SIZE_LABEL[a.size]}</span>
+      </div>
+      <div class="boss ${bossClass}">ボス: ${a.boss}</div>
+      ${a.restrict?'<span class="restrict">ユニット制限あり</span>':'<span class="no-restrict">制限なし</span>'}
+      <div class="prog-bar"><div class="prog-fill ${fillCls}" style="width:${pct}%"></div></div>
+      <div class="count">${list.length} / ${cap} 人${myHere>0?` （自分 ${myHere}回）`:''}</div>
+      <div class="slots">${slotHtml}</div>
+      <div class="btn-row">
+        <button class="join-btn" onclick="joinArea(${a.id})" ${canJoin?'':'disabled'}>
+          ${isFull?'満員':myTotal>=3?'上限に達した':'+ 参加'}
+        </button>
+        <button class="leave-btn" onclick="leaveArea(${a.id})" ${canLeave?'':'disabled'}>− 取消</button>
+      </div>
+      <button class="win-toggle${isWin?' on':''}" onclick="toggleWin(${a.id})">
+        <span class="win-dot"></span>${isWin?'取れそう ON':'取れそう OFF'}
+      </button>
+      <div class="pts-row">
+        <span>${a.pts}pt</span>
+        ${isWin?`<span class="pts-on">+ ${a.pts}pt 計上中</span>`:''}
+      </div>
+      ${isAdmin?`
+      <div class="admin-edit" id="edit-${a.id}">
+        <label>ボス名</label>
+        <select id="boss-sel-${a.id}">${bossOptions}</select>
+        <label>ユニット制限</label>
+        <select id="restrict-sel-${a.id}">
+          <option value="false"${!a.restrict?' selected':''}>制限なし</option>
+          <option value="true"${a.restrict?' selected':''}>制限あり</option>
+        </select>
+        <div class="admin-edit-btns">
+          <button class="primary" onclick="saveAreaEdit(${a.id})">保存</button>
+          <button onclick="showAreaEdit(${a.id})">キャンセル</button>
+        </div>
+      </div>
+      <button style="width:100%;margin-top:6px;font-size:11px;background:#fef3e2;color:#b7770d;border-color:#f9c74f" onclick="showAreaEdit(${a.id})">管理者：編集</button>
+      `:''}
+    </div>`;
+  }).join('');
+}
+
+function renderStats() {
+  let total=0, pts=0;
+  for (const key in joins) total+=(joins[key]||[]).length;
+  for (const key in winning) { if(winning[key]){const a=areas.find(x=>x.id===parseInt(key));if(a)pts+=a.pts;} }
+  document.getElementById('totalJoined').textContent = total;
+  document.getElementById('myJoins').textContent = getCountFor(activeUser)+'/3';
+  document.getElementById('estPts').textContent = pts;
+}
+
+function renderSummary() {
+  const byUser={};
+  for (const key in joins) for (const name of (joins[key]||[])) { if(!byUser[name])byUser[name]=[]; byUser[name].push(parseInt(key)); }
+  const names=Object.keys(byUser).sort();
+  if(!names.length){document.getElementById('summaryContent').innerHTML='<div class="empty">まだ誰も登録していません</div>';return;}
+  const rows=names.map(n=>{
+    const al=byUser[n];const cm={};for(const id of al)cm[id]=(cm[id]||0)+1;
+    const txt=Object.entries(cm).map(([id,c])=>`${id}エリア${c>1?` x${c}`:''}`).join(', ');
+    return `<tr><td>${n}</td><td>${txt}</td><td>${al.length}/3</td></tr>`;
+  }).join('');
+  document.getElementById('summaryContent').innerHTML=`<table><thead><tr><th>名前</th><th>参加エリア</th><th>回数</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+window.showTab = function(tab) {
+  document.getElementById('view-areas').style.display = tab==='areas'?'':'none';
+  document.getElementById('view-summary').style.display = tab==='summary'?'':'none';
+  document.getElementById('tab-areas').className='tab'+(tab==='areas'?' active':'');
+  document.getElementById('tab-summary').className='tab'+(tab==='summary'?' active':'');
+  if(tab==='summary') renderSummary();
+};
+
+if(myName) updateUserPanelUI();
+</script>
+</body>
+</html>
