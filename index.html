@@ -12,6 +12,7 @@
       margin: 0;
       padding: 24px;
     }
+
     .container {
       max-width: 520px;
       margin: 0 auto;
@@ -19,14 +20,19 @@
       border-radius: 16px;
       padding: 20px;
       text-align: center;
+      overflow: hidden; /* ← はみ出し防止 */
     }
+
     h1 {
       font-size: 24px;
       margin-bottom: 20px;
+      word-break: keep-all;
     }
+
     .menu-btn {
       display: block;
       width: 100%;
+      max-width: 100%; /* ← はみ出し防止 */
       padding: 16px;
       margin-bottom: 16px;
       background: #2563eb;
@@ -35,17 +41,35 @@
       border-radius: 12px;
       text-decoration: none;
       font-weight: bold;
+      box-sizing: border-box; /* ← 重要 */
+      word-break: break-word; /* ← 長い文字でも折り返す */
     }
+
     .menu-btn:hover {
       background: #1d4ed8;
+    }
+
+    /* スマホ対応 */
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+      .container {
+        padding: 16px;
+      }
+      .menu-btn {
+        padding: 14px;
+        font-size: 16px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>ツールメニュー</h1>
-    <a class="menu-btn" href="rune/index.html">ルーンスコア増加量</a>
-    <a class="menu-btn" href="guild/index.html">ギルド占領戦 役割整理ツール(準備中)</a>
+
+    <a class="menu-btn" href="rune/index.html">ルーンスコア増加量計算</a>
+    <a class="menu-btn" href="guild/index.html">ギルド占領戦 役割整理</a>
 
   </div>
 </body>
